@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test LDP Tools</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box glass-container">
+            <h1 class="auth-title">TEST PAGE</h1>
+            <p class="auth-subtitle">Kiểm tra chức năng cơ bản</p>
+
+            <div id="test-results">
+                <h3>Test Results:</h3>
+                <div id="results"></div>
+            </div>
+
+            <button onclick="runTests()" class="submit-btn">Run Tests</button>
+            <button onclick="clearData()" class="submit-btn" style="background: #ef4444;">Clear All Data</button>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        function runTests() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+
+            // Test 1: localStorage
+            try {
+                localStorage.setItem('test', 'working');
+                const testValue = localStorage.getItem('test');
+                results.innerHTML += '<div>✅ localStorage: Working</div>';
+                localStorage.removeItem('test');
+            } catch (e) {
+                results.innerHTML += '<div>❌ localStorage: Failed - ' + e.message + '</div>';
+            }
+
+            // Test 2: Auth functions
+            try {
+                if (typeof login === 'function') {
+                    results.innerHTML += '<div>✅ login function: Available</div>';
+                } else {
+                    results.innerHTML += '<div>❌ login function: Not found</div>';
+                }
+
+                if (typeof register === 'function') {
+                    results.innerHTML += '<div>✅ register function: Available</div>';
+                } else {
+                    results.innerHTML += '<div>❌ register function: Not found</div>';
+                }
+
+                if (typeof showNotification === 'function') {
+                    results.innerHTML += '<div>✅ showNotification function: Available</div>';
+                } else {
+                    results.innerHTML += '<div>❌ showNotification function: Not found</div>';
+                }
+            } catch (e) {
+                results.innerHTML += '<div>❌ Function tests: Error - ' + e.message + '</div>';
+            }
+
+            // Test 3: Check existing data
+            try {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+                results.innerHTML += '<div>📊 Users in system: ' + users.length + '</div>';
+                results.innerHTML += '<div>👤 Current user: ' + (currentUser ? currentUser.username : 'None') + '</div>';
+
+                if (users.length > 0) {
+                    results.innerHTML += '<div>👥 User list:</div>';
+                    users.forEach(user => {
+                        results.innerHTML += '<div>&nbsp;&nbsp;- ' + user.username + ' (' + (user.isAdmin ? 'Admin' : 'User') + ')</div>';
+                    });
+                }
+            } catch (e) {
+                results.innerHTML += '<div>❌ Data check: Error - ' + e.message + '</div>';
+            }
+
+            // Test 4: DOM elements
+            const notification = document.getElementById('notification');
+            if (notification) {
+                results.innerHTML += '<div>✅ Notification element: Found</div>';
+            } else {
+                results.innerHTML += '<div>❌ Notification element: Not found</div>';
+            }
+
+            // Test 5: Event listeners
+            const testBtn = document.querySelector('button[onclick="runTests()"]');
+            if (testBtn) {
+                results.innerHTML += '<div>✅ Test button: Found</div>';
+            } else {
+                results.innerHTML += '<div>❌ Test button: Not found</div>';
+            }
+        }
+
+        function clearData() {
+            if (confirm('Bạn có chắc muốn xóa TẤT CẢ dữ liệu?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // Auto run tests on load
+        window.addEventListener('load', function() {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

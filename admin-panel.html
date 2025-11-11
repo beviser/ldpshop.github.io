@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDP TOOLS - Admin Panel</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="light-beam"></div>
+        <div class="light-beam"></div>
+        <div class="light-beam"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="menu-icon" id="menuIcon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <a href="home.html" class="logo">LDP TOOLS</a>
+        <div class="user-info">
+            <span class="username" id="headerUsername">Admin</span>
+            <div class="balance-box" id="headerBalance">∞</div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <ul>
+            <li onclick="window.location.href='home.html'">
+                <i>🏠</i> Trang chủ
+            </li>
+            <li onclick="window.location.href='#account'">
+                <i>👤</i> Kiểm tra tài khoản
+            </li>
+            <li onclick="window.location.href='deposit.html'">
+                <i>💰</i> Nạp tiền
+            </li>
+            <li onclick="showHistory()">
+                <i>📜</i> Lịch sử mua
+            </li>
+            <li onclick="window.location.href='admin-panel.html'">
+                <i>⚙️</i> Control Panel
+            </li>
+            <li onclick="logout()">
+                <i>🚪</i> Đăng xuất
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1 class="admin-title">⚙️ CONTROL PANEL</h1>
+                <p class="admin-subtitle">Quản lý hệ thống LDP Tools</p>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-label">Tổng người dùng</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalKeys">0</div>
+                    <div class="stat-label">Keys đã tạo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeKeys">0</div>
+                    <div class="stat-label">Keys đang active</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalRevenue">0đ</div>
+                    <div class="stat-label">Tổng doanh thu</div>
+                </div>
+            </div>
+
+            <!-- Admin Panels Grid -->
+            <div class="admin-grid">
+                <!-- User Management Panel -->
+                <div class="admin-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">👥</div>
+                        <h3 class="panel-title">Danh Sách User</h3>
+                    </div>
+                    <div class="user-list" id="userList">
+                        <div class="empty-state">
+                            <div class="empty-icon">👤</div>
+                            <div class="empty-title">Chưa có người dùng</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Key Panel -->
+                <div class="admin-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">🔑</div>
+                        <h3 class="panel-title">Tạo Key Tool</h3>
+                    </div>
+                    <form class="admin-form" id="keyForm">
+                        <div class="form-group">
+                            <label>Tên tài khoản</label>
+                            <input type="text" class="admin-input" id="keyUsername" placeholder="Nhập username" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Chọn Tool</label>
+                            <select class="admin-select" id="keyTool" required>
+                                <option value="toolv1">Tool V1 - Tài Xỉu</option>
+                                <option value="toolmd5">Tool MD5 - Giải mã</option>
+                                <option value="toolsicbo">Tool Sicbo - 3 xí ngầu</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Thời hạn</label>
+                            <select class="admin-select" id="keyDuration" required>
+                                <option value="30min">30 phút - 10,000 VND</option>
+                                <option value="2h">2 giờ - 20,000 VND</option>
+                                <option value="1day">1 ngày - 50,000 VND</option>
+                                <option value="3days">3 ngày - 100,000 VND</option>
+                                <option value="7days">7 ngày - 150,000 VND</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="submit-btn">🔑 Tạo Key</button>
+                    </form>
+                </div>
+
+                <!-- Keys List Panel -->
+                <div class="admin-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">📋</div>
+                        <h3 class="panel-title">Danh Sách Keys</h3>
+                    </div>
+                    <div class="key-list" id="keyList">
+                        <div class="empty-state">
+                            <div class="empty-icon">🔑</div>
+                            <div class="empty-title">Chưa có key nào</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Send Notification Panel -->
+                <div class="admin-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">📢</div>
+                        <h3 class="panel-title">Gửi Thông Báo</h3>
+                    </div>
+                    <form class="admin-form" id="notificationForm">
+                        <div class="form-group">
+                            <label>Nội dung thông báo</label>
+                            <textarea class="admin-input" id="notificationMessage" placeholder="Nhập nội dung..." rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">📢 Gửi thông báo</button>
+                    </form>
+                </div>
+
+                <!-- System Management Panel -->
+                <div class="admin-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">🔧</div>
+                        <h3 class="panel-title">Quản Lý Hệ Thống</h3>
+                    </div>
+                    <div class="system-actions">
+                        <button onclick="exportData()" class="action-btn">📤 Export Data</button>
+                        <button onclick="importData()" class="action-btn">📥 Import Data</button>
+                        <button onclick="clearInactiveKeys()" class="action-btn warning">🗑️ Xóa Keys Hết Hạn</button>
+                        <button onclick="resetSystem()" class="action-btn danger">🔄 Reset Hệ Thống</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div class="notification-icon">✓</div>
+        <div class="notification-content">
+            <div class="notification-title">Thông báo</div>
+            <div class="notification-message">Message here</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('⚙️ Admin panel initializing...');
+
+            // Check admin access
+            const currentUser = checkAuth();
+            if (!currentUser || !currentUser.isAdmin) {
+                showNotification('Bạn không có quyền truy cập admin panel!', 'error');
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 3000);
+                return;
+            }
+
+            // Initialize UI
+            initializeHeader();
+            initializeSidebar();
+            loadAdminData();
+
+            // Setup form handlers
+            setupFormHandlers();
+
+            console.log('✅ Admin panel ready');
+        });
+
+        // Setup form handlers
+        function setupFormHandlers() {
+            // Key creation form
+            document.getElementById('keyForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createKey();
+            });
+
+            // Notification form
+            document.getElementById('notificationForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                sendNotification();
+            });
+        }
+
+        // Load admin data
+        function loadAdminData() {
+            loadUsersList();
+            loadKeysList();
+            updateStats();
+        }
+
+        // Load users list
+        function loadUsersList() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const userList = document.getElementById('userList');
+
+            // Filter out admin users for display
+            const regularUsers = users.filter(u => !u.isAdmin);
+
+            if (regularUsers.length === 0) {
+                userList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👤</div>
+                        <div class="empty-title">Chưa có người dùng thường</div>
+                    </div>
+                `;
+                return;
+            }
+
+            userList.innerHTML = '';
+            regularUsers.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="user-details">
+                        <div class="user-name">${user.username}</div>
+                        <div class="user-date">Đăng ký: ${new Date(user.createdAt).toLocaleDateString('vi-VN')}</div>
+                        <div class="user-tools">Tools active: ${countActiveTools(user.tools)}</div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="action-btn edit" onclick="editUser('${user.username}')">Sửa</button>
+                        <button class="action-btn delete" onclick="deleteUser('${user.username}')">Xóa</button>
+                    </div>
+                `;
+                userList.appendChild(userItem);
+            });
+        }
+
+        // Load keys list
+        function loadKeysList() {
+            const keys = JSON.parse(localStorage.getItem('keys') || '[]');
+            const keyList = document.getElementById('keyList');
+
+            if (keys.length === 0) {
+                keyList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔑</div>
+                        <div class="empty-title">Chưa có key nào</div>
+                    </div>
+                `;
+                return;
+            }
+
+            keyList.innerHTML = '';
+            keys.forEach((key, index) => {
+                const isExpired = key.expiry && new Date(key.expiry) < new Date();
+                const isUsed = key.used;
+
+                const keyItem = document.createElement('div');
+                keyItem.className = 'key-item';
+                keyItem.innerHTML = `
+                    <div class="key-code">${key.key}</div>
+                    <div class="key-info">
+                        <span>User: ${key.username}</span>
+                        <span>Tool: ${key.tool_name}</span>
+                        <span>Duration: ${formatDuration(key.duration)}</span>
+                    </div>
+                    <div class="key-status">
+                        <span class="status ${isUsed ? 'used' : isExpired ? 'expired' : 'active'}">
+                            ${isUsed ? 'Đã dùng' : isExpired ? 'Hết hạn' : 'Active'}
+                        </span>
+                    </div>
+                    <button class="delete-key-btn" onclick="deleteKey(${index})">Xóa</button>
+                `;
+                keyList.appendChild(keyItem);
+            });
+        }
+
+        // Update statistics
+        function updateStats() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const keys = JSON.parse(localStorage.getItem('keys') || '[]');
+
+            const totalUsers = users.filter(u => !u.isAdmin).length;
+            const totalKeys = keys.length;
+            const activeKeys = keys.filter(k => !k.used && (!k.expiry || new Date(k.expiry) > new Date())).length;
+
+            // Calculate revenue (simplified)
+            const revenue = keys.filter(k => k.used).length * 10000; // Rough estimate
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('totalKeys').textContent = totalKeys;
+            document.getElementById('activeKeys').textContent = activeKeys;
+            document.getElementById('totalRevenue').textContent = formatCurrency(revenue);
+        }
+
+        // Create key
+        function createKey() {
+            const username = document.getElementById('keyUsername').value.trim();
+            const toolName = document.getElementById('keyTool').value;
+            const duration = document.getElementById('keyDuration').value;
+
+            if (!username || !toolName || !duration) {
+                showNotification('Vui lòng nhập đầy đủ thông tin!', 'error');
+                return;
+            }
+
+            // Check if user exists
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const userExists = users.some(u => u.username === username);
+
+            if (!userExists) {
+                showNotification('Người dùng không tồn tại!', 'error');
+                return;
+            }
+
+            // Generate key
+            const key = generateKey(toolName, username, duration);
+
+            showNotification(`✅ Key đã tạo: ${key}`, 'success');
+
+            // Reset form
+            document.getElementById('keyForm').reset();
+
+            // Reload data
+            loadAdminData();
+        }
+
+        // Send notification
+        function sendNotification() {
+            const message = document.getElementById('notificationMessage').value.trim();
+
+            if (!message) {
+                showNotification('Vui lòng nhập nội dung thông báo!', 'error');
+                return;
+            }
+
+            // Add to notifications
+            const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+            notifications.push({
+                message: message,
+                sender: 'admin',
+                createdAt: new Date().toISOString(),
+                sentTo: [] // In real implementation, this would be populated
+            });
+
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+
+            showNotification('✅ Thông báo đã được gửi!', 'success');
+
+            // Reset form
+            document.getElementById('notificationForm').reset();
+        }
+
+        // Generate key (simplified version)
+        function generateKey(toolName, username, duration) {
+            const keys = JSON.parse(localStorage.getItem('keys') || '[]');
+
+            let key;
+            do {
+                key = 'LDP-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            } while (keys.some(k => k.key === key));
+
+            const expiry = calculateExpiry(duration);
+
+            const keyData = {
+                key: key,
+                tool_name: toolName,
+                username: username,
+                duration: duration,
+                expiry: expiry,
+                createdAt: new Date().toISOString(),
+                used: false,
+                usedAt: null
+            };
+
+            keys.push(keyData);
+            localStorage.setItem('keys', JSON.stringify(keys));
+
+            return key;
+        }
+
+        // Calculate expiry
+        function calculateExpiry(duration) {
+            const now = new Date();
+            switch(duration) {
+                case '30min': return new Date(now.getTime() + 30 * 60000).toISOString();
+                case '2h': return new Date(now.getTime() + 2 * 3600000).toISOString();
+                case '1day': return new Date(now.getTime() + 24 * 3600000).toISOString();
+                case '3days': return new Date(now.getTime() + 3 * 24 * 3600000).toISOString();
+                case '7days': return new Date(now.getTime() + 7 * 24 * 3600000).toISOString();
+                default: return new Date(now.getTime() + 24 * 3600000).toISOString();
+            }
+        }
+
+        // Count active tools
+        function countActiveTools(tools) {
+            if (!tools) return 0;
+            return Object.values(tools).filter(tool => tool && tool.active).length;
+        }
+
+        // Edit user
+        function editUser(username) {
+            const newUsername = prompt(`Nhập tên mới cho ${username}:`, username);
+            if (newUsername && newUsername !== username) {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const userIndex = users.findIndex(u => u.username === username);
+
+                if (userIndex !== -1) {
+                    users[userIndex].username = newUsername;
+                    localStorage.setItem('users', JSON.stringify(users));
+                    showNotification(`✅ Đã đổi tên thành: ${newUsername}`);
+                    loadAdminData();
+                }
+            }
+        }
+
+        // Delete user
+        function deleteUser(username) {
+            if (confirm(`Bạn có chắc muốn XÓA user "${username}"?`)) {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const filteredUsers = users.filter(u => u.username !== username);
+
+                localStorage.setItem('users', JSON.stringify(filteredUsers));
+                showNotification(`✅ Đã xóa user: ${username}`);
+                loadAdminData();
+            }
+        }
+
+        // Delete key
+        function deleteKey(index) {
+            if (confirm('Bạn có chắc muốn xóa key này?')) {
+                const keys = JSON.parse(localStorage.getItem('keys') || '[]');
+                keys.splice(index, 1);
+                localStorage.setItem('keys', JSON.stringify(keys));
+                showNotification('✅ Đã xóa key');
+                loadAdminData();
+            }
+        }
+
+        // System management functions
+        function exportData() {
+            const data = {
+                users: localStorage.getItem('users'),
+                keys: localStorage.getItem('keys'),
+                notifications: localStorage.getItem('notifications'),
+                currentUser: localStorage.getItem('currentUser')
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ldp-tools-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+
+            URL.revokeObjectURL(url);
+            showNotification('✅ Dữ liệu đã được export!');
+        }
+
+        function importData() {
+            showNotification('Tính năng import đang được phát triển...');
+        }
+
+        function clearInactiveKeys() {
+            const keys = JSON.parse(localStorage.getItem('keys') || '[]');
+            const now = new Date();
+            const activeKeys = keys.filter(k => !k.used && (!k.expiry || new Date(k.expiry) > now));
+
+            const removedCount = keys.length - activeKeys.length;
+            localStorage.setItem('keys', JSON.stringify(activeKeys));
+
+            showNotification(`✅ Đã xóa ${removedCount} keys hết hạn!`);
+            loadAdminData();
+        }
+
+        function resetSystem() {
+            if (confirm('⚠️ CẢNH BÁO: Hành động này sẽ XÓA TẤT CẢ dữ liệu! Bạn có chắc chắn?')) {
+                if (confirm('❗ XÁC NHẬN LẦN CUỐI: Tất cả dữ liệu sẽ bị xóa vĩnh viễn!')) {
+                    localStorage.clear();
+                    showNotification('🔄 Hệ thống đã được reset!');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                }
+            }
+        }
+
+        // Show history (placeholder)
+        function showHistory() {
+            showNotification('Tính năng đang được phát triển...');
+        }
+    </script>
+</body>
+</html>

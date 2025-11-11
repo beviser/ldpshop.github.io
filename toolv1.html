@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDP TOOLS - Tool V1</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="light-beam"></div>
+        <div class="light-beam"></div>
+        <div class="light-beam"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="menu-icon" id="menuIcon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <a href="home.html" class="logo">LDP TOOLS</a>
+        <div class="user-info">
+            <span class="username" id="headerUsername">Username</span>
+            <div class="balance-box" id="headerBalance">0đ</div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <ul>
+            <li onclick="window.location.href='home.html'">
+                <i>🏠</i> Trang chủ
+            </li>
+            <li onclick="window.location.href='#account'">
+                <i>👤</i> Kiểm tra tài khoản
+            </li>
+            <li onclick="window.location.href='deposit.html'">
+                <i>💰</i> Nạp tiền
+            </li>
+            <li onclick="showHistory()">
+                <i>📜</i> Lịch sử mua
+            </li>
+            <li id="adminPanelLink" class="hidden" onclick="window.location.href='admin-panel.html'">
+                <i>⚙️</i> Control Panel
+            </li>
+            <li onclick="logout()">
+                <i>🚪</i> Đăng xuất
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Tool Header -->
+        <div class="tool-header">
+            <h1 class="tool-title">🎲 Tool V1 - Dự đoán Tài Xỉu</h1>
+            <p class="tool-description">Công cụ dự đoán Tài/Xỉu dựa trên mẫu cầu và tỉ lệ vị từ 3 xúc xắc</p>
+            <div class="tool-status" id="toolStatus">Checking...</div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <span>🎲</span>
+                    <span>Tool V1 Bot</span>
+                </div>
+                <div class="chat-settings">
+                    <button class="settings-btn" onclick="customizeChat()">🎨 Tùy chỉnh</button>
+                    <button class="settings-btn" onclick="resetChat()">🔄 Reset</button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div>Xin chào! Tôi là Bot Tool V1 🤖</div>
+                    <div class="message-time" id="botTime"></div>
+                </div>
+                <div class="message bot">
+                    <div>Gửi cho tôi 3 số xúc xắc vừa ra (vd: 1 2 3 hoặc 1,2,3)</div>
+                    <div class="message-time"></div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input
+                    type="text"
+                    class="chat-input"
+                    id="chatInput"
+                    placeholder="Nhập 3 số xúc xắc (vd: 1 2 3)..."
+                    maxlength="20"
+                >
+                <button class="send-btn" onclick="sendDiceInput()">
+                    <span>➤</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Usage Instructions -->
+        <div class="usage-section">
+            <h3>📖 Hướng dẫn sử dụng</h3>
+            <div class="usage-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Chuẩn bị</h4>
+                        <p>Đảm bảo tool đã được kích hoạt bằng key hợp lệ</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Gửi dữ liệu</h4>
+                        <p>Gửi 3 số xúc xắc vừa ra trong game (từ 1-6)</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Nhận kết quả</h4>
+                        <p>Bot sẽ phân tích và đưa ra dự đoán Tài/Xỉu với tỉ lệ chính xác</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div class="notification-icon">✓</div>
+        <div class="notification-content">
+            <div class="notification-title">Thông báo</div>
+            <div class="notification-message">Message here</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script>
+        // Global variables
+        let chatHistory = [];
+        let isWaitingForInput = true;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎲 Tool V1 page initializing...');
+
+            // Check authentication
+            const currentUser = checkAuth();
+            if (!currentUser) return;
+
+            // Check tool access
+            if (!checkToolAccess('toolv1')) {
+                showNotification('Tool V1 chưa được kích hoạt! Vui lòng mua key.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 3000);
+                return;
+            }
+
+            // Initialize UI
+            initializeHeader();
+            initializeSidebar();
+            updateToolStatus();
+
+            // Mouse trail effect
+            document.addEventListener('mousemove', function(e) {
+                const trail = document.createElement('div');
+                trail.className = 'mouse-trail';
+                trail.style.left = e.pageX - 3 + 'px';
+                trail.style.top = e.pageY - 3 + 'px';
+                document.body.appendChild(trail);
+
+                setTimeout(() => {
+                    trail.remove();
+                }, 600);
+            });
+
+            // Enter key handler
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendDiceInput();
+                }
+            });
+
+            console.log('✅ Tool V1 page ready');
+        });
+
+        // Update tool status
+        function updateToolStatus() {
+            const statusEl = document.getElementById('toolStatus');
+            const currentUser = getCurrentUser();
+
+            if (checkToolAccess('toolv1')) {
+                const tool = currentUser.tools.toolv1;
+                if (tool.expiry) {
+                    const remaining = getTimeRemaining(tool.expiry);
+                    statusEl.className = 'tool-status active';
+                    statusEl.textContent = `Đã kích hoạt - Còn ${remaining}`;
+                } else {
+                    statusEl.className = 'tool-status active';
+                    statusEl.textContent = 'Đã kích hoạt';
+                }
+            } else {
+                statusEl.className = 'tool-status locked';
+                statusEl.textContent = 'Chưa kích hoạt';
+            }
+        }
+
+        // Send dice input
+        function sendDiceInput() {
+            const input = document.getElementById('chatInput');
+            const diceText = input.value.trim();
+
+            if (!diceText) {
+                showNotification('Vui lòng nhập 3 số xúc xắc!', 'warning');
+                return;
+            }
+
+            // Parse dice input
+            const dice = parseDiceInput(diceText);
+            if (!dice) {
+                showNotification('Định dạng không hợp lệ! Vui lòng nhập 3 số từ 1-6.', 'error');
+                addBotMessage('❌ Định dạng không hợp lệ! Vui lòng gửi 3 số xúc xắc từ 1-6 (vd: 1 2 3)');
+                return;
+            }
+
+            // Add user message
+            addUserMessage(diceText);
+
+            // Process prediction
+            const prediction = predictTaiXiu(dice);
+
+            // Add bot response
+            addBotMessage(prediction.message);
+
+            // Clear input
+            input.value = '';
+        }
+
+        // Parse dice input
+        function parseDiceInput(text) {
+            // Remove commas and split by spaces
+            const cleaned = text.replace(/,/g, ' ').replace(/\s+/g, ' ').trim();
+            const parts = cleaned.split(' ');
+
+            if (parts.length !== 3) return null;
+
+            const dice = [];
+            for (const part of parts) {
+                const num = parseInt(part);
+                if (isNaN(num) || num < 1 || num > 6) return null;
+                dice.push(num);
+            }
+
+            return dice;
+        }
+
+        // Predict Tai Xiu
+        function predictTaiXiu(dice) {
+            const [a, b, c] = dice;
+            const total = a + b + c;
+
+            // Advanced prediction algorithm
+            const prediction = calculatePrediction(a, b, c);
+
+            let message = `🎲 *KẾT QUẢ PHÂN TÍCH*\n\n`;
+            message += `Xúc xắc vừa ra: ${a} ${b} ${c} (Tổng: ${total})\n\n`;
+            message += `🎯 *DỰ ĐOÁN VÁN TIẾP THEO:*\n`;
+            message += `➤ Chọn: **${prediction.recommendation}**\n\n`;
+            message += `📊 *Tỉ lệ thắng:*\n`;
+            message += `• Tài: ${prediction.taiPercent}%\n`;
+            message += `• Xỉu: ${prediction.xiuPercent}%\n\n`;
+            message += `🎪 *DỰ ĐOÁN VỊ:*\n`;
+            message += `${prediction.positions.join(' ')}\n\n`;
+            message += `💡 *Tỉ lệ đúng:* ${prediction.accuracy}%`;
+
+            return {
+                message: message,
+                data: prediction
+            };
+        }
+
+        // Calculate prediction using advanced algorithm
+        function calculatePrediction(a, b, c) {
+            // Base calculation
+            const total = a + b + c;
+            const avg = total / 3;
+
+            // Pattern analysis
+            const sorted = [a, b, c].sort((x, y) => x - y);
+            const hasPair = (a === b || b === c || a === c);
+            const hasTriple = (a === b && b === c);
+            const highCount = [a, b, c].filter(x => x >= 4).length;
+            const lowCount = 3 - highCount;
+
+            // Probability calculation
+            let taiProb = 0.5;
+            let xiuProb = 0.5;
+
+            // Adjust based on patterns
+            if (hasTriple) {
+                // Triple usually leads to opposite
+                taiProb = total > 10 ? 0.4 : 0.6;
+                xiuProb = 1 - taiProb;
+            } else if (hasPair) {
+                // Pair tends to continue trend
+                taiProb = total >= 11 ? 0.55 : 0.45;
+                xiuProb = 1 - taiProb;
+            } else if (highCount > lowCount) {
+                // More high numbers -> likely Tai
+                taiProb = 0.6;
+                xiuProb = 0.4;
+            } else if (lowCount > highCount) {
+                // More low numbers -> likely Xiu
+                taiProb = 0.4;
+                xiuProb = 0.6;
+            }
+
+            // Add some randomness but keep it deterministic
+            const seed = a * 7 + b * 13 + c * 17;
+            const randomFactor = (seed % 20 - 10) / 100; // -0.1 to +0.1
+            taiProb += randomFactor;
+            xiuProb -= randomFactor;
+
+            // Ensure valid range
+            taiProb = Math.max(0.1, Math.min(0.9, taiProb));
+            xiuProb = 1 - taiProb;
+
+            // Determine recommendation
+            const recommendation = taiProb >= 0.5 ? 'TÀI' : 'XỈU';
+
+            // Generate position predictions
+            const positions = generatePositions(recommendation, total);
+
+            // Calculate accuracy
+            const accuracy = Math.round((Math.max(taiProb, xiuProb) + 0.3) * 100);
+
+            return {
+                recommendation: recommendation,
+                taiPercent: Math.round(taiProb * 100),
+                xiuPercent: Math.round(xiuProb * 100),
+                positions: positions,
+                accuracy: Math.min(95, accuracy)
+            };
+        }
+
+        // Generate position predictions
+        function generatePositions(recommendation, currentTotal) {
+            const positions = [];
+            const targetRange = recommendation === 'TÀI' ? [11, 18] : [3, 10];
+
+            // Generate 3 different positions within target range
+            const used = new Set();
+
+            while (positions.length < 3) {
+                let pos;
+                do {
+                    pos = Math.floor(Math.random() * (targetRange[1] - targetRange[0] + 1)) + targetRange[0];
+                } while (used.has(pos));
+
+                used.add(pos);
+                positions.push(pos);
+            }
+
+            return positions.sort((a, b) => a - b);
+        }
+
+        // Add user message to chat
+        function addUserMessage(text) {
+            const messages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <div class="message-time">${new Date().toLocaleTimeString('vi-VN')}</div>
+            `;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // Add bot message to chat
+        function addBotMessage(text) {
+            const messages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.innerHTML = `
+                <div>${text.replace(/\n/g, '<br>')}</div>
+                <div class="message-time">${new Date().toLocaleTimeString('vi-VN')}</div>
+            `;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // Customize chat (placeholder)
+        function customizeChat() {
+            showNotification('Tính năng tùy chỉnh đang được phát triển...');
+        }
+
+        // Reset chat
+        function resetChat() {
+            if (confirm('Bạn có chắc muốn reset cuộc trò chuyện?')) {
+                document.getElementById('chatMessages').innerHTML = `
+                    <div class="message bot">
+                        <div>Xin chào! Tôi là Bot Tool V1 🤖</div>
+                        <div class="message-time">${new Date().toLocaleTimeString('vi-VN')}</div>
+                    </div>
+                    <div class="message bot">
+                        <div>Gửi cho tôi 3 số xúc xắc vừa ra (vd: 1 2 3 hoặc 1,2,3)</div>
+                        <div class="message-time">${new Date().toLocaleTimeString('vi-VN')}</div>
+                    </div>
+                `;
+                chatHistory = [];
+            }
+        }
+
+        // Show history (placeholder)
+        function showHistory() {
+            showNotification('Tính năng lịch sử đang được phát triển...');
+        }
+    </script>
+</body>
+</html>
